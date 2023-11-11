@@ -10,6 +10,8 @@ comfy_game!(
     update
 );
 
+pub struct Hammer;
+
 pub struct GameState;
 
 impl GameState {
@@ -32,12 +34,15 @@ pub fn make_context<'a, 'b: 'a>(
 pub fn setup(c: &mut GameContext) {
     c.engine
         .load_texture_from_bytes("tilemap", include_bytes!("../assets/tilemap.png"));
+    c.engine
+        .load_texture_from_bytes("hammer", include_bytes!("../assets/hammer.png"));
 
     c.engine.renderer.window.set_resizable(false);
     c.engine
         .renderer
         .window
         .set_inner_size(PhysicalSize::new(1088, 768));
+    c.engine.renderer.window.set_cursor_visible(false);
 
     // 15x10 tiles plus border
     for x in 0..17 {
@@ -69,8 +74,19 @@ pub fn setup(c: &mut GameContext) {
         }
     }
 
+    commands().spawn((
+        Sprite::new("hammer", splat(1.0), 1, WHITE),
+        Transform::position(vec2(8.0, 5.5)),
+        Hammer,
+    ));
+
     main_camera_mut().center = vec2(8.0, 5.5);
     main_camera_mut().zoom = 17.0;
 }
 
-fn update(_: &mut GameContext) {}
+fn update(_: &mut GameContext) {
+    for (_, (_, transform)) in world().query::<(&Hammer, &mut Transform)>().iter() {
+        let mouse_pos = mouse_world();
+        transform.position = mouse_pos;
+    }
+}
