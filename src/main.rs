@@ -10,7 +10,6 @@ comfy_game!(
     update
 );
 
-pub struct Hammer;
 pub struct Mallet;
 pub struct Enemy;
 
@@ -54,8 +53,6 @@ pub fn make_context<'a, 'b: 'a>(
 pub fn setup(c: &mut GameContext) {
     c.engine
         .load_texture_from_bytes("tilemap", include_bytes!("../assets/tilemap.png"));
-    c.engine
-        .load_texture_from_bytes("hammer", include_bytes!("../assets/hammer1.png"));
     c.engine
         .load_texture_from_bytes("mallet", include_bytes!("../assets/mallet.png"));
 
