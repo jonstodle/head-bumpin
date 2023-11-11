@@ -138,6 +138,8 @@ pub fn setup(c: &mut GameContext) {
 }
 
 fn update(_: &mut GameContext) {
+    let mut slam = false;
+
     for (_, (_, sprite, transform)) in world()
         .query::<(&Mallet, &mut AnimatedSprite, &mut Transform)>()
         .iter()
@@ -150,6 +152,13 @@ fn update(_: &mut GameContext) {
         };
         if sprite.state.animation_name == "slam" && sprite.state.progress() > 0.9 {
             sprite.play("idle");
+            slam = true;
+        }
+    }
+
+    for (entity, (_, enemy_transform)) in world().query::<(&Enemy, &Transform)>().iter() {
+        if slam && (enemy_transform.position - mouse_world()).length() < 0.7 {
+            commands().despawn(entity);
         }
     }
 }
