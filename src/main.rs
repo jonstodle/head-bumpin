@@ -17,6 +17,7 @@ pub struct GameState {
     spawn_interval: f32,
     spawn_timer: f32,
     spawn_trigger: f32,
+    player_score: i32,
 }
 
 impl GameState {
@@ -25,6 +26,7 @@ impl GameState {
             spawn_interval: 5.0,
             spawn_timer: 0.0,
             spawn_trigger: 5.0,
+            player_score: 0,
         }
     }
 }
@@ -34,6 +36,7 @@ pub struct GameContext<'a, 'b: 'a> {
     spawn_interval: &'a mut f32,
     spawn_timer: &'a mut f32,
     spawn_trigger: &'a mut f32,
+    player_score: &'a mut i32,
     pub engine: &'a mut EngineContext<'b>,
 }
 
@@ -46,6 +49,7 @@ pub fn make_context<'a, 'b: 'a>(
         spawn_interval: &mut state.spawn_interval,
         spawn_timer: &mut state.spawn_timer,
         spawn_trigger: &mut state.spawn_trigger,
+        player_score: &mut state.player_score,
         engine,
     }
 }
@@ -176,6 +180,7 @@ fn update(c: &mut GameContext) {
         existing_coordinates.push(transform.position);
         if slam && (transform.position - mouse_world()).length() < 0.7 {
             commands().despawn(entity);
+            *c.player_score += 1;
         }
     }
 
@@ -194,5 +199,25 @@ fn update(c: &mut GameContext) {
             Transform::position(vec2(x as f32, y as f32)),
             Enemy,
         ));
+    }
+
+    for (i, digit) in c
+        .player_score
+        .to_string()
+        .chars()
+        .map(|c| c.to_digit(10).unwrap())
+        .enumerate()
+    {
+        draw_sprite_ex(
+            texture_id("tilemap"),
+            vec2((i as f32 / 2.0) - 0.5, 11.5),
+            WHITE,
+            11,
+            DrawTextureParams {
+                source_rect: Some(IRect::new(ivec2(16 * digit as i32, 16 * 10), isplat(16))),
+                dest_size: Some(Size::world(1.0, 1.0)),
+                ..Default::default()
+            },
+        )
     }
 }
