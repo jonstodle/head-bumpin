@@ -93,6 +93,9 @@ pub fn setup(c: &mut GameContext) {
         }
     }
 
+    main_camera_mut().center = vec2(8.0, 5.5);
+    main_camera_mut().zoom = 17.0;
+
     //17x5-9
     for x in 1..16 {
         for y in 1..11 {
@@ -148,8 +151,11 @@ pub fn setup(c: &mut GameContext) {
         Mallet,
     ));
 
-    main_camera_mut().center = vec2(8.0, 5.5);
-    main_camera_mut().zoom = 17.0;
+    c.engine.load_sound_from_bytes(
+        "slam",
+        include_bytes!("../assets/bump.wav"),
+        StaticSoundSettings::new().volume(0.3),
+    )
 }
 
 fn update(c: &mut GameContext) {
@@ -168,6 +174,7 @@ fn update(c: &mut GameContext) {
         if sprite.state.animation_name == "slam" && sprite.state.progress() > 0.9 {
             sprite.play("idle");
             slam = true;
+            play_sound("slam");
         }
     }
 
