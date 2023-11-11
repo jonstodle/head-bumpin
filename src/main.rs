@@ -12,6 +12,7 @@ comfy_game!(
 
 pub struct Hammer;
 pub struct Mallet;
+pub struct Enemy;
 
 pub struct GameState;
 
@@ -77,10 +78,31 @@ pub fn setup(c: &mut GameContext) {
         }
     }
 
+    //17x5-9
+    for x in 1..16 {
+        for y in 1..11 {
+            if random_i32(1, 10) != 1 {
+                continue;
+            }
+
+            let variant = random_i32(5, 9);
+            commands().spawn((
+                Sprite::new("tilemap", splat(1.0), 10, WHITE).with_rect(
+                    16 * 17,
+                    16 * variant,
+                    16,
+                    16,
+                ),
+                Transform::position(vec2(x as f32, y as f32)),
+                Enemy,
+            ))
+        }
+    }
+
     commands().spawn((
         AnimatedSpriteBuilder::new()
             .flip_x(true)
-            .z_index(1)
+            .z_index(100)
             .size(splat(2.0))
             .add_animation(
                 "idle",
