@@ -16,7 +16,6 @@ pub struct Enemy;
 pub struct GameState {
     spawn_interval: f32,
     spawn_timer: f32,
-    spawn_trigger: f32,
     player_score: i32,
 }
 
@@ -25,7 +24,6 @@ impl GameState {
         GameState {
             spawn_interval: 5.0,
             spawn_timer: 0.0,
-            spawn_trigger: 5.0,
             player_score: 0,
         }
     }
@@ -35,7 +33,6 @@ pub struct GameContext<'a, 'b: 'a> {
     delta: f32,
     spawn_interval: &'a mut f32,
     spawn_timer: &'a mut f32,
-    spawn_trigger: &'a mut f32,
     player_score: &'a mut i32,
     pub engine: &'a mut EngineContext<'b>,
 }
@@ -48,7 +45,6 @@ pub fn make_context<'a, 'b: 'a>(
         delta: engine.delta,
         spawn_interval: &mut state.spawn_interval,
         spawn_timer: &mut state.spawn_timer,
-        spawn_trigger: &mut state.spawn_trigger,
         player_score: &mut state.player_score,
         engine,
     }
@@ -185,8 +181,8 @@ fn update(c: &mut GameContext) {
     }
 
     *c.spawn_timer += c.delta;
-    if *c.spawn_timer > *c.spawn_trigger {
-        *c.spawn_trigger += *c.spawn_interval;
+    if *c.spawn_timer > *c.spawn_interval {
+        *c.spawn_timer = 0.0;
 
         let (mut x, mut y, variant) = (random_i32(1, 16), random_i32(1, 11), random_i32(5, 9));
         while existing_coordinates.contains(&vec2(x as f32, y as f32)) {
