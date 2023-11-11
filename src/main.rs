@@ -35,7 +35,7 @@ pub fn setup(c: &mut GameContext) {
     c.engine
         .load_texture_from_bytes("tilemap", include_bytes!("../assets/tilemap.png"));
     c.engine
-        .load_texture_from_bytes("hammer", include_bytes!("../assets/hammer.png"));
+        .load_texture_from_bytes("hammer", include_bytes!("../assets/hammer1.png"));
 
     c.engine.renderer.window.set_resizable(false);
     c.engine
@@ -75,7 +75,7 @@ pub fn setup(c: &mut GameContext) {
     }
 
     commands().spawn((
-        Sprite::new("hammer", splat(1.0), 1, WHITE),
+        Sprite::new("hammer", splat(2.0), 1, WHITE).with_rect(0, 0, 16, 16),
         Transform::position(vec2(8.0, 5.5)),
         Hammer,
     ));
@@ -85,8 +85,17 @@ pub fn setup(c: &mut GameContext) {
 }
 
 fn update(_: &mut GameContext) {
-    for (_, (_, transform)) in world().query::<(&Hammer, &mut Transform)>().iter() {
-        let mouse_pos = mouse_world();
+    for (_, (_, sprite, transform)) in world()
+        .query::<(&Hammer, &mut Sprite, &mut Transform)>()
+        .iter()
+    {
+        let mouse_pos = mouse_world() + vec2(0.7, 0.3);
         transform.position = mouse_pos;
+
+        sprite.source_rect = if is_mouse_button_down(MouseButton::Left) {
+            Some(IRect::new(ivec2(16, 0), isplat(16)))
+        } else {
+            Some(IRect::new(isplat(0), isplat(16)))
+        };
     }
 }
