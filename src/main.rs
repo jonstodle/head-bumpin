@@ -77,11 +77,6 @@ pub fn setup(c: &mut GameContext) {
         }
     }
 
-    // commands().spawn((
-    //     Sprite::new("hammer", splat(2.0), 1, WHITE).with_rect(0, 0, 16, 16),
-    //     Transform::position(vec2(8.0, 5.5)),
-    //     Hammer,
-    // ));
     commands().spawn((
         AnimatedSpriteBuilder::new()
             .flip_x(true)
@@ -125,7 +120,7 @@ fn update(_: &mut GameContext) {
         .query::<(&Mallet, &mut AnimatedSprite, &mut Transform)>()
         .iter()
     {
-        let mouse_pos = mouse_world() + vec2(0.7, 0.3);
+        let mouse_pos = mouse_world() + vec2(0.55, 0.75);
         transform.position = mouse_pos;
 
         if is_mouse_button_pressed(MouseButton::Left) {
