@@ -14,23 +14,41 @@ pub struct Hammer;
 pub struct Mallet;
 pub struct Enemy;
 
-pub struct GameState;
+pub struct GameState {
+    spawn_interval: f32,
+    spawn_timer: f32,
+    spawn_trigger: f32,
+}
 
 impl GameState {
     pub fn new(_: &mut EngineContext) -> Self {
-        GameState {}
+        GameState {
+            spawn_interval: 5.0,
+            spawn_timer: 0.0,
+            spawn_trigger: 5.0,
+        }
     }
 }
 
 pub struct GameContext<'a, 'b: 'a> {
+    delta: f32,
+    spawn_interval: &'a mut f32,
+    spawn_timer: &'a mut f32,
+    spawn_trigger: &'a mut f32,
     pub engine: &'a mut EngineContext<'b>,
 }
 
 pub fn make_context<'a, 'b: 'a>(
-    _: &'a mut GameState,
+    state: &'a mut GameState,
     engine: &'a mut EngineContext<'b>,
 ) -> GameContext<'a, 'b> {
-    GameContext { engine }
+    GameContext {
+        delta: engine.delta,
+        spawn_interval: &mut state.spawn_interval,
+        spawn_timer: &mut state.spawn_timer,
+        spawn_trigger: &mut state.spawn_trigger,
+        engine,
+    }
 }
 
 pub fn setup(c: &mut GameContext) {
@@ -137,7 +155,7 @@ pub fn setup(c: &mut GameContext) {
     main_camera_mut().zoom = 17.0;
 }
 
-fn update(_: &mut GameContext) {
+fn update(c: &mut GameContext) {
     let mut slam = false;
 
     for (_, (_, sprite, transform)) in world()
@@ -156,9 +174,28 @@ fn update(_: &mut GameContext) {
         }
     }
 
-    for (entity, (_, enemy_transform)) in world().query::<(&Enemy, &Transform)>().iter() {
-        if slam && (enemy_transform.position - mouse_world()).length() < 0.7 {
+    let mut existing_coordinates = Vec::<Vec2>::with_capacity(100);
+    for (entity, (_, transform)) in world().query::<(&Enemy, &Transform)>().iter() {
+        existing_coordinates.push(transform.position);
+        if slam && (transform.position - mouse_world()).length() < 0.7 {
             commands().despawn(entity);
         }
+    }
+
+    *c.spawn_timer += c.delta;
+    if *c.spawn_timer > *c.spawn_trigger {
+        *c.spawn_trigger += *c.spawn_interval;
+
+        let (mut x, mut y, variant) = (random_i32(1, 16), random_i32(1, 11), random_i32(5, 9));
+        while existing_coordinates.contains(&vec2(x as f32, y as f32)) {
+            x = random_i32(1, 16);
+            y = random_i32(1, 11);
+        }
+
+        commands().spawn((
+            Sprite::new("tilemap", splat(1.0), 10, WHITE).with_rect(16 * 17, 16 * variant, 16, 16),
+            Transform::position(vec2(x as f32, y as f32)),
+            Enemy,
+        ));
     }
 }
