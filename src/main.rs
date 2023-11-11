@@ -220,4 +220,8 @@ fn update(c: &mut GameContext) {
             },
         )
     }
+
+    if world().query::<&Enemy>().iter().count() > 100 {
+        draw_text("Game Over!", main_camera().center, WHITE, TextAlign::Center);
+    }
 }
