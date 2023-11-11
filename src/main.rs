@@ -11,6 +11,7 @@ comfy_game!(
 );
 
 pub struct Hammer;
+pub struct Mallet;
 
 pub struct GameState;
 
@@ -36,6 +37,8 @@ pub fn setup(c: &mut GameContext) {
         .load_texture_from_bytes("tilemap", include_bytes!("../assets/tilemap.png"));
     c.engine
         .load_texture_from_bytes("hammer", include_bytes!("../assets/hammer1.png"));
+    c.engine
+        .load_texture_from_bytes("mallet", include_bytes!("../assets/mallet.png"));
 
     c.engine.renderer.window.set_resizable(false);
     c.engine
@@ -74,10 +77,43 @@ pub fn setup(c: &mut GameContext) {
         }
     }
 
+    // commands().spawn((
+    //     Sprite::new("hammer", splat(2.0), 1, WHITE).with_rect(0, 0, 16, 16),
+    //     Transform::position(vec2(8.0, 5.5)),
+    //     Hammer,
+    // ));
     commands().spawn((
-        Sprite::new("hammer", splat(2.0), 1, WHITE).with_rect(0, 0, 16, 16),
+        AnimatedSpriteBuilder::new()
+            .flip_x(true)
+            .z_index(1)
+            .size(splat(2.0))
+            .add_animation(
+                "idle",
+                0.1,
+                true,
+                AnimationSource::Atlas {
+                    name: "mallet".into(),
+                    offset: ivec2(56, 0),
+                    step: ivec2(56, 0),
+                    size: isplat(56),
+                    frames: 1,
+                },
+            )
+            .add_animation(
+                "slam",
+                0.06,
+                true,
+                AnimationSource::Atlas {
+                    name: "mallet".into(),
+                    offset: isplat(0),
+                    step: ivec2(56, 0),
+                    size: isplat(56),
+                    frames: 4,
+                },
+            )
+            .build(),
         Transform::position(vec2(8.0, 5.5)),
-        Hammer,
+        Mallet,
     ));
 
     main_camera_mut().center = vec2(8.0, 5.5);
@@ -86,16 +122,17 @@ pub fn setup(c: &mut GameContext) {
 
 fn update(_: &mut GameContext) {
     for (_, (_, sprite, transform)) in world()
-        .query::<(&Hammer, &mut Sprite, &mut Transform)>()
+        .query::<(&Mallet, &mut AnimatedSprite, &mut Transform)>()
         .iter()
     {
         let mouse_pos = mouse_world() + vec2(0.7, 0.3);
         transform.position = mouse_pos;
 
-        sprite.source_rect = if is_mouse_button_down(MouseButton::Left) {
-            Some(IRect::new(ivec2(16, 0), isplat(16)))
-        } else {
-            Some(IRect::new(isplat(0), isplat(16)))
+        if is_mouse_button_pressed(MouseButton::Left) {
+            sprite.play("slam");
         };
+        if sprite.state.animation_name == "slam" && sprite.state.progress() > 0.9 {
+            sprite.play("idle");
+        }
     }
 }
