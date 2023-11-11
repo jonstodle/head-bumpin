@@ -184,6 +184,10 @@ fn update(c: &mut GameContext) {
     if *c.spawn_timer > *c.spawn_interval {
         *c.spawn_timer = 0.0;
 
+        if *c.player_score % 5 == 0 {
+            *c.spawn_interval = (*c.spawn_interval * 0.8).max(0.2);
+        }
+
         let (mut x, mut y, variant) = (random_i32(1, 16), random_i32(1, 11), random_i32(5, 9));
         while existing_coordinates.contains(&vec2(x as f32, y as f32)) {
             x = random_i32(1, 16);
