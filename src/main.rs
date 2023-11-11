@@ -155,7 +155,22 @@ pub fn setup(c: &mut GameContext) {
         "slam",
         include_bytes!("../assets/bump.wav"),
         StaticSoundSettings::new().volume(0.3),
-    )
+    );
+    c.engine.load_sound_from_bytes(
+        "oof-1",
+        include_bytes!("../assets/oof-1.wav"),
+        StaticSoundSettings::new().volume(0.2),
+    );
+    c.engine.load_sound_from_bytes(
+        "oof-2",
+        include_bytes!("../assets/oof-2.wav"),
+        StaticSoundSettings::new().volume(0.2),
+    );
+    c.engine.load_sound_from_bytes(
+        "oof-3",
+        include_bytes!("../assets/oof-3.wav"),
+        StaticSoundSettings::new().volume(0.2),
+    );
 }
 
 fn update(c: &mut GameContext) {
@@ -184,6 +199,9 @@ fn update(c: &mut GameContext) {
         if slam && (transform.position - mouse_world()).length() < 0.7 {
             commands().despawn(entity);
             *c.player_score += 1;
+
+            let variant = random_i32(1, 4);
+            play_sound(format!("oof-{variant}").as_str());
         }
     }
 
