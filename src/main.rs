@@ -22,7 +22,7 @@ pub struct GameState {
 impl GameState {
     pub fn new(_: &mut EngineContext) -> Self {
         GameState {
-            spawn_interval: 5.0,
+            spawn_interval: 2.0,
             spawn_timer: 0.0,
             player_score: 0,
         }
@@ -214,8 +214,8 @@ fn update(c: &mut GameContext) {
     if *c.spawn_timer > *c.spawn_interval {
         *c.spawn_timer = 0.0;
 
-        if *c.player_score % 5 == 0 {
-            *c.spawn_interval = (*c.spawn_interval * 0.8).max(0.2);
+        if *c.player_score % 2 == 0 {
+            *c.spawn_interval = (*c.spawn_interval - 0.2).max(0.2);
         }
 
         let (mut x, mut y, variant) = (random_i32(1, 16), random_i32(1, 11), random_i32(5, 9));
@@ -251,7 +251,7 @@ fn update(c: &mut GameContext) {
         )
     }
 
-    if world().query::<&Enemy>().iter().count() > 10 {
+    if world().query::<&Enemy>().iter().count() > 100 {
         c.engine.flags.borrow_mut().insert("game_over".to_string());
     }
 }
