@@ -152,6 +152,16 @@ pub fn setup(c: &mut GameContext) {
         include_bytes!("../assets/oof-3.wav"),
         StaticSoundSettings::new().volume(0.2),
     );
+    c.engine.load_sound_from_bytes(
+        "oof-4",
+        include_bytes!("../assets/oof-4.wav"),
+        StaticSoundSettings::new().volume(0.2),
+    );
+    c.engine.load_sound_from_bytes(
+        "oof-5",
+        include_bytes!("../assets/oof-5.wav"),
+        StaticSoundSettings::new().volume(0.2),
+    );
 
     c.engine
         .load_fonts_from_bytes(&[("font", include_bytes!("../assets/font.ttf"))]);
@@ -195,7 +205,7 @@ fn update(c: &mut GameContext) {
             commands().despawn(entity);
             *c.player_score += 1;
 
-            let variant = random_i32(1, 4);
+            let variant = random_i32(1, 6);
             play_sound(format!("oof-{variant}").as_str());
         }
     }
