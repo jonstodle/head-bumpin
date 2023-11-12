@@ -96,26 +96,7 @@ pub fn setup(c: &mut GameContext) {
     main_camera_mut().center = vec2(8.0, 5.5);
     main_camera_mut().zoom = 17.0;
 
-    //17x5-9
-    for x in 1..16 {
-        for y in 1..11 {
-            if random_i32(1, 10) != 1 {
-                continue;
-            }
-
-            let variant = random_i32(5, 9);
-            commands().spawn((
-                Sprite::new("tilemap", splat(1.0), 10, WHITE).with_rect(
-                    16 * 17,
-                    16 * variant,
-                    16,
-                    16,
-                ),
-                Transform::position(vec2(x as f32, y as f32)),
-                Enemy,
-            ))
-        }
-    }
+    spawn_initial_enemies();
 
     commands().spawn((
         AnimatedSpriteBuilder::new()
@@ -171,6 +152,15 @@ pub fn setup(c: &mut GameContext) {
         include_bytes!("../assets/oof-3.wav"),
         StaticSoundSettings::new().volume(0.2),
     );
+
+    c.engine
+        .load_fonts_from_bytes(&[("font", include_bytes!("../assets/font.ttf"))]);
+    c.engine
+        .load_texture_from_bytes("ui-red-panel", include_bytes!("../assets/ui-red-panel.png"));
+    c.engine.load_texture_from_bytes(
+        "ui-yellow-button",
+        include_bytes!("../assets/ui-yellow-button.png"),
+    );
 }
 
 fn update(c: &mut GameContext) {
@@ -191,6 +181,11 @@ fn update(c: &mut GameContext) {
             slam = true;
             play_sound("slam");
         }
+    }
+
+    if c.engine.flags.borrow().get("game_over").is_some() {
+        draw_end_menu(c);
+        return;
     }
 
     let mut existing_coordinates = Vec::<Vec2>::with_capacity(100);
@@ -246,7 +241,101 @@ fn update(c: &mut GameContext) {
         )
     }
 
-    if world().query::<&Enemy>().iter().count() > 100 {
-        draw_text("Game Over!", main_camera().center, WHITE, TextAlign::Center);
+    if world().query::<&Enemy>().iter().count() > 10 {
+        c.engine.flags.borrow_mut().insert("game_over".to_string());
+    }
+}
+
+fn draw_end_menu(c: &mut GameContext) {
+    draw_sprite(
+        texture_id("ui-red-panel"),
+        vec2(8.0, 5.5),
+        WHITE,
+        50,
+        splat(5.0),
+    );
+    draw_text_ex(
+        "Game Over!",
+        main_camera().center + vec2(0.0, 2.0),
+        TextAlign::Center,
+        TextParams {
+            font: font_family("font", 24.0),
+            ..Default::default()
+        },
+    );
+    draw_text_ex(
+        "Your score",
+        main_camera().center + vec2(0.0, 0.25),
+        TextAlign::Center,
+        TextParams {
+            font: font_family("font", 32.0),
+            ..Default::default()
+        },
+    );
+    draw_text_ex(
+        format!("{}", c.player_score).as_str(),
+        main_camera().center + vec2(0.0, -0.25),
+        TextAlign::Center,
+        TextParams {
+            font: font_family("font", 32.0),
+            ..Default::default()
+        },
+    );
+    draw_sprite(
+        texture_id("ui-yellow-button"),
+        main_camera().center + vec2(0.0, -1.7),
+        WHITE,
+        51,
+        vec2(3.0, 1.0),
+    );
+    draw_text_ex(
+        "Replay",
+        main_camera().center + vec2(0.0, -1.7),
+        TextAlign::Center,
+        TextParams {
+            font: font_family("font", 24.0),
+            ..Default::default()
+        },
+    );
+
+    if is_mouse_button_pressed(MouseButton::Left) {
+        let mouse_pos = mouse_world();
+        let camera_center = main_camera().center;
+        if mouse_pos.x > camera_center.x - 1.5
+            && mouse_pos.x < camera_center.x + 1.5
+            && mouse_pos.y > camera_center.y - 2.7
+            && mouse_pos.y < camera_center.y - 1.7
+        {
+            c.engine.flags.borrow_mut().remove("game_over");
+            *c.spawn_interval = 5.0;
+            *c.spawn_timer = 0.0;
+            *c.player_score = 0;
+            for (entity, (_, _)) in world().query::<(&Enemy, &Transform)>().iter() {
+                commands().despawn(entity);
+            }
+            spawn_initial_enemies();
+        }
+    }
+}
+
+fn spawn_initial_enemies() {
+    for x in 1..16 {
+        for y in 1..11 {
+            if random_i32(1, 10) != 1 {
+                continue;
+            }
+
+            let variant = random_i32(5, 9);
+            commands().spawn((
+                Sprite::new("tilemap", splat(1.0), 10, WHITE).with_rect(
+                    16 * 17,
+                    16 * variant,
+                    16,
+                    16,
+                ),
+                Transform::position(vec2(x as f32, y as f32)),
+                Enemy,
+            ))
+        }
     }
 }
